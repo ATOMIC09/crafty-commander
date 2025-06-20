@@ -7,9 +7,9 @@ import time
 # === CONFIG ===
 CHROMEDRIVER_PATH = "./chromedriver.exe"
 CRAFTY_URL = "https://[YOURCRAFTYURL]:8443"
+SERVER_ID = "[YOURSERVERID]"
 USERNAME = "[YOURUSERNAME]"
 PASSWORD = "[YOURPASS]"
-SERVER_DETAIL_URL = CRAFTY_URL + "/panel/server_detail?id=[YOURSERVERID]&subpage=term"
 COMMAND = "gamemode survival testuser"
 
 # === SETUP ===
@@ -34,16 +34,39 @@ try:
     time.sleep(3)  # wait for login to complete
 
     # 4. Navigate to the server terminal
-    driver.get(SERVER_DETAIL_URL)
+    driver.get(CRAFTY_URL + "/panel/server_detail?id=" + SERVER_ID + "&subpage=term")
     time.sleep(2)
 
     # 5. Fill in and send command
-    driver.find_element(By.ID, "server_command").send_keys(COMMAND)
-    driver.find_element(By.ID, "submit").click()
+    start_z = 1199
+    end_z = 1340
+    step = 11
+
+    x1, y1, x2, y2 = 189, 93, 189, 92
+    block_type = "polished_deepslate"
+    delay_seconds = 0.01
+
+    for z in range(start_z, end_z + 1, step):
+        command = f"fill {x1} {y1} {z} {x2} {y2} {z} {block_type}"
+        command_input = driver.find_element(By.ID, "server_command")
+        command_input.clear()
+        command_input.send_keys(command)
+
+         # Close toast if it exists
+        try:
+            close_btn = driver.find_element(By.CSS_SELECTOR, ".toast.show .fa-xmark")
+            close_btn.click()
+            time.sleep(0.01)
+        except:
+            pass
+
+        driver.find_element(By.ID, "submit").click()
+        print(f"✅ Sent: {command}")
+        time.sleep(delay_seconds)
 
     print("✅ Command sent successfully.")
 
-    time.sleep(3)  # wait to observe output
+    time.sleep(3)
 
 finally:
     driver.quit()
